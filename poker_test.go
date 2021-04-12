@@ -1,0 +1,122 @@
+package poker
+
+import (
+	"reflect"
+	"testing"
+)
+
+// Define a function BestHand([]string) ([]string, error).
+
+var invalidTestCases = []struct {
+	name string
+	hand string
+}{
+	{
+		name: "1 is an invalid card rank",
+		hand: "1♢ 2♡ 3♡ 4♡ 5♡",
+	},
+	{
+		name: "11 is an invalid card rank",
+		hand: "11♢ 2♡ 3♡ 4♡ 5♡",
+	},
+	{
+		name: "too few cards",
+		hand: "2♡ 3♡ 4♡ 5♡",
+	},
+	{
+		name: "too many cards",
+		hand: "2♡ 3♡ 4♡ 5♡ 6♡ 7♡",
+	},
+	{
+		name: "lack of rank",
+		hand: "11♢ 2♡ ♡ 4♡ 5♡",
+	},
+	{
+		name: "lack of suit",
+		hand: "2♡ 3♡ 4 5♡ 7♡",
+	},
+	{
+		name: "H is an invalid suit",
+		hand: "2♡ 3♡ 4H 5♡ 7♡",
+	},
+	{
+		name: "♥ is an invalid suit",
+		hand: "2♡ 3♡ 4♥ 5♡ 7♡",
+	},
+	{
+		name: "lack of spacing",
+		hand: "2♡ 3♡ 5♡7♡ 8♡",
+	},
+	{
+		name: "double suits after rank",
+		hand: "2♡ 3♡ 5♡♡ 8♡ 9♡",
+	},
+}
+
+// func TestIsFourKind(t *testing.T) {
+// 	for i, tt := range [][]card{
+// 		{{rank: 1}, {rank: 1}, {rank: 1}, {rank: 1}, {rank: 2}},
+// 		{{rank: 1}, {rank: 2}, {rank: 1}, {rank: 1}, {rank: 1}},
+// 		{{rank: 1}, {rank: 1}, {rank: 2}, {rank: 1}, {rank: 1}},
+// 		{{rank: 1}, {rank: 1}, {rank: 1}, {rank: 2}, {rank: 1}},
+// 		{{rank: 2}, {rank: 1}, {rank: 1}, {rank: 1}, {rank: 1}},
+// 	} {
+// 		ok, r := isFourKind(tt)
+// 		if !ok {
+// 			t.Errorf("iteration %d should be four kind", i+1)
+// 		}
+// 		if r != 1 {
+// 			t.Errorf("rank should be 1 but got %d at iteration %d", r, i+1)
+// 		}
+// 	}
+// }
+
+// func TestTwoPair(t *testing.T) {
+// 	for i, tt := range []struct {
+// 		input []int
+// 		r     int
+// 		is    bool
+// 	}{
+// 		{input: []int{2, 8, 6, 8, 11}, r: 0, is: false},
+// 		{input: []int{4, 5, 4, 8, 5}, r: 5, is: true},
+// 	} {
+// 		ok, r := isTwoPair(tt.input[0], tt.input[1], tt.input[2], tt.input[3], tt.input[4])
+// 		if ok != tt.is {
+// 			t.Errorf("wrong two pair check in iteration:%d, expected: %v, got %v", i+1, tt.is, ok)
+// 		}
+// 		if r != tt.r {
+// 			t.Errorf("wrong highest rank in iteration:%d, expected: %d, got %d", i+1, tt.r, r)
+// 		}
+// 	}
+// }
+
+func TestBestHandValid(t *testing.T) {
+	for _, tt := range validTestCases {
+		actual, err := BestHand(tt.hands)
+		if err != nil {
+			var _ error = err
+			t.Fatalf("Got unexpected error in valid case %q: %v", tt.name, err)
+		}
+		if !reflect.DeepEqual(actual, tt.best) {
+			t.Fatalf("Mismatch in result of valid case %q: got %#v, want %#v",
+				tt.name, actual, tt.best)
+		}
+	}
+}
+
+func TestBestHandInvalid(t *testing.T) {
+	for _, tt := range invalidTestCases {
+		_, err := BestHand([]string{tt.hand})
+		if err == nil {
+			t.Fatalf("Did not get an error for invalid case %q", tt.name)
+		}
+	}
+}
+
+func BenchmarkBestHand(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, tt := range validTestCases {
+			BestHand(tt.hands)
+		}
+	}
+}
